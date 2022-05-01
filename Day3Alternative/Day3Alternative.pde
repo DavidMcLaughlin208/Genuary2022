@@ -26,7 +26,8 @@ void setup() {
 }
 
 void draw() {
-  
+  //fill(0);
+  //rect(0, 0, displayWidth, displayHeight);
   for (Star star : stars) {
     //star.show();
   }

@@ -15,7 +15,7 @@ void setup() {
   
   for (int i = 0; i < planetCount; i++) {
       CelestialBody followTarget = i == 0 ? sun : planets.get(i - 1);
-      planets.add(new Planet(80 * (i + 1) + (60 * (random(1) - 0.5)), random(10, 50), sun, random(0.05, 0.2), followTarget));
+      planets.add(new Planet(80 * (i + 1) + (60 * (random(1) - 0.5)), (int) random(5, 25), sun, random(0.05, 0.2), followTarget, random(1)));
   }
   
   for (int i = 0; i < numStars; i++) {
@@ -24,6 +24,7 @@ void setup() {
 }
 
 void draw() {
+  System.out.println(frameRate);
   fill(0);
   rect(0, 0, displayWidth, displayHeight);
   for (Star star : stars) {
@@ -52,7 +53,7 @@ public class Sun implements CelestialBody {
    color col;
    
    public Sun(float radius) {
-      this.pos = new PVector(0, 0);
+      this.pos = new PVector(0.0, 0.0);
       this.radius = radius;
       this.col = color(random(255),random(255),random(255));
    }
@@ -76,30 +77,35 @@ public class Sun implements CelestialBody {
 }
 
 public class Planet implements CelestialBody {
- 
+
   float orbitRadius;
   float orbitHeight;
-  float planetRadius;
+  int planetRadius;
   PVector pos;
   color col;
+  color col2;
   Sun sun;
   float angle = 0;
   float orbitSpeed;
   float orbitAngle;
   CelestialBody followTarget;
   PVector orbitalPos;
+  float planetAngle = 0;
+  float planetRotateSpeed;
   
-  public Planet(float orbitRadius, float planetRadius, Sun sun, float orbitSpeed, CelestialBody followTarget) {
+  public Planet(float orbitRadius, int planetRadius, Sun sun, float orbitSpeed, CelestialBody followTarget, float planetRotateSpeed) {
     this.orbitRadius = orbitRadius; 
     this.orbitHeight = orbitRadius + (orbitRadius / 3 * (random(1) - 0.5));
     this.planetRadius = planetRadius;
     this.pos = new PVector(orbitRadius, 0);
     this.col = color(random(255),random(255),random(255));
+    this.col2 = color(random(255),random(255),random(255));
     this.sun = sun;
     this.orbitSpeed = orbitSpeed;
     this.orbitAngle = random(360);
     this.followTarget = followTarget;
     this.orbitalPos = new PVector(followTarget.getPos().x, followTarget.getPos().y);
+    this.planetRotateSpeed = planetRotateSpeed;
   }
   
   public PVector getPos() {
@@ -133,7 +139,28 @@ public class Planet implements CelestialBody {
      noStroke();
      fill(this.col);
      circle(0, 0, this.planetRadius);
+     //drawPlanet();
      pop();
+  }
+  
+  private void drawPlanet() {
+    push();
+    this.planetAngle += this.planetRotateSpeed * 0.05;
+    rotate(this.planetAngle);
+    for (int x = -this.planetRadius; x < this.planetRadius; x++) {
+      for (int y = -this.planetRadius; y < this.planetRadius; y++) {
+        if (dist(x, y, 0, 0) > this.planetRadius) {
+          continue;
+        }
+        float noi = noise((x + this.planetRadius) * 0.5, (y + this.planetRadius) * 0.5);
+        stroke(lerpColor(this.col, this.col2, noi));
+        point(x,y);
+      }
+    }
+    noFill();
+    stroke(this.col);
+    circle(0, 0, this.planetRadius * 2);
+    pop();
   }
   
 }
@@ -143,7 +170,7 @@ public class Star {
     float startSeed;
     public Star(float x, float y) {
         this.pos = new PVector(x, y);
-        this.startSeed = random(100);
+        this.startSeed = random(1000);
     }
     
     public void show() {
@@ -153,3 +180,30 @@ public class Star {
     }
     
   }
+  
+public class ShootingStar {
+  PVector pos;
+  PVector previousPos;
+  float angle;
+  float speed;
+  float radius;
+  
+  public ShootingStar(float x, float y, float angle, float speed) {
+    this.pos = new PVector(x, y);
+    this.previousPos = new PVector(x, y);
+    this.angle = angle;
+    this.speed = speed;
+    this.radius = 3;
+  }
+  
+  public boolean outOfBounds() {
+    return this.pos.x < displayWidth - 100 || this.pos.x > displayWidth + 100 || this.pos.y < displayHeight - 100 || this.pos.y > displayHeight + 100;
+  }
+  
+  public void show() {
+    noStroke();
+    fill(255);
+    circle(this.pos.x, this.pos.y, 3);
+  }
+  
+}
